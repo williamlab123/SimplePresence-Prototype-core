@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sistema de Chamada</title>
+  </head>
+  <body>
+    <h1>Insira seu ID</h1>
+    <form id="form" method="POST" action="/iniciar_chamada">
+      <label for="id">ID:</label>
+      <input type="text" id="id" name="id">
+      <button type="submit">Iniciar chamada</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      
+      document.getElementById('form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const profId = document.getElementById('id').value;
+        console.log(`O professor com id ${profId} abriu a chamada`);
+        // Adicione o código para enviar o ID do professor para o servidor aqui
+      });
+    </script>
+  </body>
+</html>

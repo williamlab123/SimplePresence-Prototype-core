@@ -1,0 +1,38 @@
+.container {
+	margin: 0 auto;
+	max-width: 600px;
+	text-align: center;
+}
+
+h1 {
+	font-size: 2.5rem;
+	margin-bottom: 1.5rem;
+}
+
+input[type="text"] {
+	padding: 0.5rem;
+	border-radius: 5px;
+	border: none;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	margin-bottom: 1.5rem;
+	font-size: 1.5rem;
+}
+
+button {
+	padding: 0.5rem 1.5rem;
+	border-radius: 5px;
+	border: none;
+	background-color: #3498db;
+	color: white;
+	font-size: 1.5rem;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: #2980b9;
+}
+
+p {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
