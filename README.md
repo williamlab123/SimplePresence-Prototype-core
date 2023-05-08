@@ -1,4 +1,4 @@
-<div align="center"> SimplePresence core</div>
+<div "align=center"> SimplePresence core</div>
 
 
 
