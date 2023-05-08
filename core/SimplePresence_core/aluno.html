@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de presença do aluno</title>
+</head>
+
+<body>
+  <form>
+    <label for="id-input">Insira o ID do aluno:</label>
+    <input type="text" id="id-input" name="id-input">
+    <button type="submit" id="registrar-btn">Registrar presença</button>
+  </form>
+  <div id="status"></div>
+  <script>
+    const registrarBtn = document.getElementById('registrar-btn');
+
+    const idInput = document.getElementById('id-input');
+    let id;
+
+    idInput.addEventListener('change', (event) => {
+      id = event.target.value;
+    });
+
+
+    const statusMsg = document.getElementById('status');
+
+    const checkStatus = () => {
+      fetch('http://localhost:3000/verificar_chamada')
+        .then(response => response.json())
+        .then(data => {
+          if (data) {
+            registrarBtn.disabled = false;
+            console.log(`A chamada está aberta`);
+            statusMsg.innerHTML = '';
+          } else {
+            registrarBtn.disabled = true;
+            console.log(`A chamada está fechada`);
+            statusMsg.innerHTML = 'Chamada fechada';
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    setInterval(checkStatus, 1000);
+
+    idInput.addEventListener('change', (event) => {
+      id = event.target.value;
+    });
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:3000/registrar_presenca');
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          console.log(`Aluno ${id} registrou presença`);
+          statusMsg.innerHTML = 'Presença registrada';
+        } else if (xhr.status === 400) {
+          console.error(xhr.responseText);
+          statusMsg.innerHTML = xhr.responseText;
+        }
+      };
+      xhr.onerror = function () {
+        console.error('Erro na requisição.');
+      };
+      xhr.send(`id=${id}`);
+
+    })
+
+
+
+  </script>
+</body>
+
+</html>
