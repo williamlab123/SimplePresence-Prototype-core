@@ -27,7 +27,7 @@
     const statusMsg = document.getElementById('status');
 
     const checkStatus = () => {
-      fetch('http://localhost:3000/verificar_chamada')
+      fetch('https://simplepresence-production.up.railway.app/verificar_chamada')
         .then(response => response.json())
         .then(data => {
           if (data) {
@@ -53,7 +53,7 @@
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'http://localhost:3000/registrar_presenca');
+      xhr.open('POST', 'https://simplepresence-production.up.railway.app/registrar_presenca');
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onload = function () {
         if (xhr.status === 200) {
