@@ -1,1 +1,1 @@
-# core
+<div align="center"> SimplePresence core</div>
