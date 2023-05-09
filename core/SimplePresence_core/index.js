@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const wifi = require('node-wifi');
 
 app.use(express.static(__dirname));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,16 +40,77 @@ const database = {
 };
 
 let alunos_presentes = [];
+var ssidAluno;
+var ssidProf;
 
 let chamadaAberta = false;
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
+  const wifi = require('node-wifi');
+
+  wifi.init({
+    iface: null // passar null para usar a primeira interface disponível
+  });
+
+  wifi.getCurrentConnections((err, currentConnections) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    const ssid = currentConnections[0].ssid;
+    console.log('SSID atual:', ssid);
+    ssidProf = ssid;
+  });
+
 });
 
 app.get('/aluno', function (req, res) {
   res.sendFile(path.join(__dirname, 'aluno.html'));
+  const wifi = require('node-wifi');
+
+  wifi.init({
+    iface: null // passar null para usar a primeira interface disponível
+  });
+
+  wifi.getCurrentConnections((err, currentConnections) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    const ssid = currentConnections[0].ssid;
+    console.log('SSID atual:', ssid);
+    ssidAluno = ssid;
+  });
+
 });
+
+
+
+// app.post('/ssid', function (req, res) {
+//   const wifi = require('node-wifi');
+
+//   wifi.init({
+//     iface: null // passar null para usar a primeira interface disponível
+//   });
+
+//   wifi.getCurrentConnections((err, currentConnections) => {
+//     if (err) {
+//       console.log(err);
+//       return;
+//     }
+
+//     const ssid = currentConnections[0].ssid;
+//     console.log('SSID atual:', ssid);
+//   });
+
+// })
+
+
+
+
 
 app.post('/iniciar_chamada', function (req, res) {
   console.log('Chamada iniciada, aguardando alunos');
@@ -73,7 +135,7 @@ app.get('/verificar_chamada', function (req, res) {
 });
 
 
-app.get('/alunos_presentes', function (req, res){
+app.get('/alunos_presentes', function (req, res) {
   res.send(alunos_presentes)
 })
 
@@ -81,7 +143,7 @@ app.post('/registrar_presenca', function (req, res) {
   const id = req.body.id
   console.log('Chamada aberta:', chamadaAberta);
   console.log('ID inserido:', id);
-  if (chamadaAberta) {
+  if (chamadaAberta && ssidAluno == ssidProf) {
     if (database.hasOwnProperty(id)) {
 
       console.log(`Aluno registrado: ${id} - Nome: ${database[id].name} - Curso: ${database[id].course} - Turma: ${database[id].class}`);
@@ -94,7 +156,13 @@ app.post('/registrar_presenca', function (req, res) {
       console.log("id nao encontrado")
       res.status(400).json({ error: 'ID não encontrado' });
     }
-  } else {
+  } else if(ssidAluno =! ssidProf) {
+    console.log("Voce precisa estar na mesma rede para registrar presença!")
+    res.status(400).json({error: "Voce precisa estar na mesma rede para registrar presença!"})
+  }
+
+  else
+  {
     console.log("chamada fechada")
     res.status(400).json({ error: 'Chamada fechada' });
   }
