@@ -40,29 +40,31 @@ const database = {
 };
 
 let alunos_presentes = [];
-var ssidAluno;
-var ssidProf;
+var ssidAluno = "";
+var ssidProf = "";
+
+wifi.init({
+  iface: null // passar null para usar a primeira interface disponível
+});
+
+wifi.getCurrentConnections((err, currentConnections) => {
+  if (err) {
+    console.log(err);
+    return;
+  }
+
+  const ssid = currentConnections[0].ssid;
+  console.log('SSID atual:', ssid);
+  ssidProf = ssid;
+});
 
 let chamadaAberta = false;
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
-  const wifi = require('node-wifi');
 
-  wifi.init({
-    iface: null // passar null para usar a primeira interface disponível
-  });
 
-  wifi.getCurrentConnections((err, currentConnections) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
 
-    const ssid = currentConnections[0].ssid;
-    console.log('SSID atual:', ssid);
-    ssidProf = ssid;
-  });
 
 });
 
@@ -143,7 +145,7 @@ app.post('/registrar_presenca', function (req, res) {
   const id = req.body.id
   console.log('Chamada aberta:', chamadaAberta);
   console.log('ID inserido:', id);
-  if (chamadaAberta && ssidAluno == ssidProf) {
+  if (chamadaAberta && ssidAluno === ssidProf) {
     if (database.hasOwnProperty(id)) {
 
       console.log(`Aluno registrado: ${id} - Nome: ${database[id].name} - Curso: ${database[id].course} - Turma: ${database[id].class}`);
@@ -156,13 +158,12 @@ app.post('/registrar_presenca', function (req, res) {
       console.log("id nao encontrado")
       res.status(400).json({ error: 'ID não encontrado' });
     }
-  } else if(ssidAluno =! ssidProf) {
+  } else if (ssidAluno == !ssidProf) {
     console.log("Voce precisa estar na mesma rede para registrar presença!")
-    res.status(400).json({error: "Voce precisa estar na mesma rede para registrar presença!"})
+    res.status(400).json({ error: "Voce precisa estar na mesma rede para registrar presença!" })
   }
 
-  else
-  {
+  else {
     console.log("chamada fechada")
     res.status(400).json({ error: 'Chamada fechada' });
   }
