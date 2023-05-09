@@ -70,11 +70,6 @@ app.get('/', function (req, res) {
 
 app.get('/aluno', function (req, res) {
   res.sendFile(path.join(__dirname, 'aluno.html'));
-  const wifi = require('node-wifi');
-
-  wifi.init({
-    iface: null // passar null para usar a primeira interface disponível
-  });
 
   wifi.getCurrentConnections((err, currentConnections) => {
     if (err) {
@@ -86,8 +81,8 @@ app.get('/aluno', function (req, res) {
     console.log('SSID atual:', ssid);
     ssidAluno = ssid;
   });
-
 });
+
 
 
 
@@ -158,7 +153,7 @@ app.post('/registrar_presenca', function (req, res) {
       console.log("id nao encontrado")
       res.status(400).json({ error: 'ID não encontrado' });
     }
-  } else if (ssidAluno == !ssidProf) {
+  } else if (ssidAluno !== ssidProf) {
     console.log("Voce precisa estar na mesma rede para registrar presença!")
     res.status(400).json({ error: "Voce precisa estar na mesma rede para registrar presença!" })
   }
