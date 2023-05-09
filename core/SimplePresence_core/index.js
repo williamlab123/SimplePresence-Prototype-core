@@ -43,19 +43,29 @@ let alunos_presentes = [];
 var ssidAluno = "";
 var ssidProf = "";
 
-wifi.init({
-  iface: null // passar null para usar a primeira interface disponível
-});
 
-wifi.getCurrentConnections((err, currentConnections) => {
-  if (err) {
-    console.log(err);
-    return;
-  }
 
-  const ssid = currentConnections[0].ssid;
+function getCurrentSSID() {
+  return new Promise((resolve, reject) => {
+    wifi.init({
+      iface: null // passar null para usar a primeira interface disponível
+    });
+
+    wifi.getCurrentConnections((err, currentConnections) => {
+      if (err) {
+        reject(err);
+      } else {
+        const ssid = currentConnections[0].ssid;
+        resolve(ssid);
+      }
+    });
+  });
+}
+
+getCurrentSSID().then((ssid) => {
   console.log('SSID atual:', ssid);
-  ssidProf = ssid;
+}).catch((err) => {
+  console.log(err);
 });
 
 let chamadaAberta = false;
@@ -71,16 +81,15 @@ app.get('/', function (req, res) {
 app.get('/aluno', function (req, res) {
   res.sendFile(path.join(__dirname, 'aluno.html'));
 
-  wifi.getCurrentConnections((err, currentConnections) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-
-    const ssid = currentConnections[0].ssid;
+  
+  getCurrentSSID().then((ssid) => {
     console.log('SSID atual:', ssid);
-    ssidAluno = ssid;
+  }).catch((err) => {
+    console.log(err);
   });
+
+    ssidAluno = ssid;
+  
 });
 
 
