@@ -14,26 +14,26 @@ app.use(express.static('public'));
 
 
 
-const connection = mysql.createConnection({
-  host: '192.168.1.106', // Substitua pelo endereço IP do outro computador
-  user: 'root',
-  password: '12345',
-  database: 'alunos'
-});
+// const connection = mysql.createConnection({
+//   host: '192.168.1.106', // Substitua pelo endereço IP do outro computador
+//   user: 'root',
+//   password: '12345',
+//   database: 'alunos'
+// });
 
 
-function verificarAluno(id) {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM alunos WHERE id = ${id}`;
-    connection.query(query, (err, results) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results.length > 0); // Retorna true se houver resultados, caso contrário, retorna false
-      }
-    });
-  });
-}
+// function verificarAluno(id) {
+//   return new Promise((resolve, reject) => {
+//     const query = `SELECT * FROM alunos WHERE id = ${id}`;
+//     connection.query(query, (err, results) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(results.length > 0); // Retorna true se houver resultados, caso contrário, retorna false
+//       }
+//     });
+//   });
+// }
 
 
 // const database = {
@@ -208,20 +208,35 @@ app.post('/registrar_presenca', function (req, res) {
   console.log('ID inserido:', id);
   if (chamadaAberta && ssidAluno === ssidProf) {
 
-    verificarAluno(id)
-      .then(existe => {
-        if (existe) {
+   // verificarAluno(id)
+     // .then(existe => {
+       // if (existe) {
           console.log(`O aluno com ID ${id} registrou presença.`);
           res.send("Sua presença foi registrada!")
           alunos_presentes.push(id)
-        } else {
+    //    } else {
           console.log(`O aluno com ID ${id} não foi encontrado no banco de dados.`);
           res.send("Id insediro incorreto!")
+          
         }
+            
+   else if (ssidAluno !== ssidProf)
+   {
+    console.log("Voce precisa estar na mesma rede para registrar presença!")
+    res.status(400).json({ error: "Voce precisa estar na mesma rede para registrar presença!" })
+  }
+
+  else
+   {
+    console.log("chamada fechada")
+    res.status(400).json({ error: 'Chamada fechada' });
+  }
       })
-      .catch(err => {
-        console.error('Erro ao verificar aluno:', err);
-      });
+      // .catch(err => {
+      //   console.error('Erro ao verificar aluno:', err);
+      // });
+
+      
     // if (database.hasOwnProperty(id)) {
 
     //   console.log(`Aluno registrado: ${id} - Nome: ${database[id].name} - Curso: ${database[id].course} - Turma: ${database[id].class}`);
@@ -238,18 +253,9 @@ app.post('/registrar_presenca', function (req, res) {
 
 
 
-  } else if (ssidAluno !== ssidProf)
-   {
-    console.log("Voce precisa estar na mesma rede para registrar presença!")
-    res.status(400).json({ error: "Voce precisa estar na mesma rede para registrar presença!" })
-  }
+  // }
 
-  else
-   {
-    console.log("chamada fechada")
-    res.status(400).json({ error: 'Chamada fechada' });
-  }
-});
+// });
 
 
 io.on('connection', (socket) => {
