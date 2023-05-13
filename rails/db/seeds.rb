@@ -5,3 +5,12 @@
 #
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
+
+if Course.none?
+  course = Course.create!(name: 'Ciencias da Computação')
+
+  Student.create!(name: 'Willinha', course: course)
+  Student.create!(name: 'Goiaba', course: course)
+
+  Teacher.create!(name: 'Savio')
+end

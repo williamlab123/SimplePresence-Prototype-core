@@ -11,7 +11,7 @@ default: &default
 
 development:
   <<: *default
-  host: localhost
+  host: <%= ENV.fetch("POSTGRES_HOST") { 'localhost' } %>
   port: 5432
   user: postgres
   password: postgres
