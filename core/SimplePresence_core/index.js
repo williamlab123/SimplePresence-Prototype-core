@@ -14,66 +14,53 @@ app.use(express.static('public'));
 
 
 
-// const connection = mysql.createConnection({
-//   host: '192.168.1.106', // Substitua pelo endereço IP do outro computador
-//   user: 'root',
-//   password: '12345',
-//   database: 'alunos'
-// });
+//esta porra conecta com o servidor mysql do railway, mas só cai e n funfa direito ent fodase
+const connection = mysql.createConnection({
+  host: 'mysql-hcontainers-us-west-207.railway.app',
+  user: 'uroot',
+  password: 'pgYcpuAjmMsgJ1fnHy9Kq',
+  database: 'railway',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  connectTimeout: 50000, //esperando pra dar timout pq essa porra so cai e mesmo assim o sql cai
+  acquireTimeout: 10000,
+  waitForConnections: true,
+  autoReconnect: true, 
+  reconnectDelay: 5000, 
+});
 
 
-// function verificarAluno(id) {
-//   return new Promise((resolve, reject) => {
-//     const query = `SELECT * FROM alunos WHERE id = ${id}`;
-//     connection.query(query, (err, results) => {
-//       if (err) {
-//         reject(err);
-//       } else {
-//         resolve(results.length > 0); // Retorna true se houver resultados, caso contrário, retorna false
-//       }
-//     });
-//   });
-// }
+//verifica se o id do viadao do aluno existe na porcaria do  banco de dados
+
+function verificarAluno(id) {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM alunos WHERE id = ${id}`;
+    connection.query(query, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results.length > 0); 
+      }
+    });
+  });
+}
 
 
-// const database = {
-//   "2076937": {
-//     "name": "Alice",
-//     "course": "Computer Science",
-//     "class": "3A"
-//   },
-//   "1234567": {
-//     "name": "Bob",
-//     "course": "Physics",
-//     "class": "1B"
-//   },
-//   "9876543": {
-//     "name": "Charlie",
-//     "course": "Chemistry",
-//     "class": "2C"
-//   },
-//   "5555555": {
-//     "name": "David",
-//     "course": "Biology",
-//     "class": "4D"
-//   },
-//   "1111111": {
-//     "name": "Eve",
-//     "course": "Mathematics",
-//     "class": "5E"
-//   }
-// };
 
+//armazena os alunos que registraram presença na ultima aula
 let alunos_presentes = [];
+
 var ssidAluno = "";
 var ssidProf = "";
 
 
-
+//funcao que pega o ssid do corno do professor e do viado do aluno, as vezes resolve nao funcionar mas
+//na maioria das vezes funciona 
 function getCurrentSSID() {
   return new Promise((resolve, reject) => {
     wifi.init({
-      iface: null // passar null para usar a primeira interface disponível
+      iface: null 
     });
 
     wifi.getCurrentConnections((err, currentConnections) => {
@@ -88,10 +75,10 @@ function getCurrentSSID() {
 }
 
 
-
+//pega o ssid do professor (ou tenta)
 getCurrentSSID().then((ssid) => {
   ssidProf = ssid;
-  console.log('SSID atual do professor:', ssidProf);
+  console.log('SSID atual do:', ssidProf);
 }).catch((err) => {
   console.log(err);
 });
@@ -99,6 +86,7 @@ getCurrentSSID().then((ssid) => {
 
 let chamadaAberta = false;
 
+//aq carrega o endpoint main, index.html, mais conhecido tb como pagina do professor
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 
@@ -107,69 +95,32 @@ app.get('/', function (req, res) {
 
 });
 
+
+//aq é o endpoint do aluno, como da pra ler ai em baixo 
 app.get('/aluno', function (req, res) {
   res.sendFile(path.join(__dirname, 'aluno.html'));
 
+  //aq pega o ssid do aluno
   getCurrentSSID()
-  .then((ssid) => {
-    ssidAluno = ssid; // Atribui o valor do ssid à variável ssidAluno
-    console.log('ssid do aluno:', ssidAluno);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+    .then((ssid) => {
+      ssidAluno = ssid;
+      console.log('ssid do aluno:', ssidAluno);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 
-  
-//   ssidAluno =  getCurrentSSID().then((ssid) => {
 
-//   console.log('ssid do aluno:', ssidAluno);
-// }).catch((err) => {
-//   console.log(err);
-// });
-
-  
-
-  
  
-
-
-  // ssid = getCurrentSSID().then((ssid) => {
-  //   console.log('SSID atual:', ssid);
-  // }).catch((err) => {
-  //   console.log(err);
-  // });
-
- // ssidAluno = ssid;
-
 
 });
 
 
 
 
-// app.post('/ssid', function (req, res) {
-//   const wifi = require('node-wifi');
-
-//   wifi.init({
-//     iface: null // passar null para usar a primeira interface disponível
-//   });
-
-//   wifi.getCurrentConnections((err, currentConnections) => {
-//     if (err) {
-//       console.log(err);
-//       return;
-//     }
-
-//     const ssid = currentConnections[0].ssid;
-//     console.log('SSID atual:', ssid);
-//   });
-
-// })
 
 
-
-
-
+//aq inicia a chamada 
 app.post('/iniciar_chamada', function (req, res) {
   console.log('Chamada iniciada, aguardando alunos');
   chamadaAberta = true;
@@ -177,6 +128,7 @@ app.post('/iniciar_chamada', function (req, res) {
   res.send('Chamada iniciada, aguardando alunos');
 });
 
+//aq já é bem obvio oq faz né acho que nao preciso nem dizer caralho
 app.post('/fechar_chamada', function (req, res) {
   console.log("chamada fechada")
   chamadaAberta = false;
@@ -187,81 +139,133 @@ app.post('/fechar_chamada', function (req, res) {
 })
 
 
-
+//aq verifica se a chamada está aberta ou nao, retornando true ou false
 app.get('/verificar_chamada', function (req, res) {
   res.send(chamadaAberta);
 });
 
 
+//aq é pra testar se o bagui de pegar ssid ta funcionando
 app.get('/ssid', function (req, res) {
   res.send(ssidAluno)
 })
 
-
+//aq é pra testar e ver os alunos que registraram presença na ultima chamada
 app.get('/alunos_presentes', function (req, res) {
   res.send(alunos_presentes)
 })
 
+
+//aq nem vou explicar oq faz pq pqp se n souber tb pode larga mao
 app.post('/registrar_presenca', function (req, res) {
   const id = req.body.id
-  console.log('Chamada aberta:', chamadaAberta);
-  console.log('ID inserido:', id);
-  if (chamadaAberta && ssidAluno === ssidProf) {
 
-   // verificarAluno(id)
-     // .then(existe => {
-       // if (existe) {
-          console.log(`O aluno com ID ${id} registrou presença.`);
-          res.send("Sua presença foi registrada!")
-          alunos_presentes.push(id)
-    //    } else {
-          console.log(`O aluno com ID ${id} não foi encontrado no banco de dados.`);
-          res.send("Id insediro incorreto!")
-          
-        }
-            
-   else if (ssidAluno !== ssidProf)
-   {
-    console.log("Voce precisa estar na mesma rede para registrar presença!")
-    res.status(400).json({ error: "Voce precisa estar na mesma rede para registrar presença!" })
+
+  var pode_iniciar = 0;
+
+
+  //esta merda aq pega as coordenadas polares do prof e do aluno
+  const latitudeAluno = req.body.latitude;
+  const longitudeAluno = req.body.longitude;
+  const latitudeProf = req.body.latitudeProf;
+  const longitudeProf = req.body.longitudeProf;
+
+
+  function calcularDistancia(lat1, lon1, lat2, lon2) {
+    //aq pega o raio da terra para calcular com precisao a distancia
+    const raioTerra = 6371000; 
+
+//aq transforma essa porra pra radiano pra poder fazer os calculos    
+    const lat1Rad = degToRad(lat1);
+    const lon1Rad = degToRad(lon1);
+    const lat2Rad = degToRad(lat2);
+    const lon2Rad = degToRad(lon2);
+
+   
+    const dLat = lat2Rad - lat1Rad;
+    const dLon = lon2Rad - lon1Rad;
+
+
+    //aq é a formula que faz o calculo
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1Rad) *
+      Math.cos(lat2Rad) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distancia = raioTerra * c;
+
+    return distancia;
   }
 
-  else
-   {
-    console.log("chamada fechada")
-    res.status(400).json({ error: 'Chamada fechada' });
+  function degToRad(deg) {
+    return deg * (Math.PI / 180);
   }
-      })
-      // .catch(err => {
-      //   console.error('Erro ao verificar aluno:', err);
-      // });
 
+ 
+  function calcularDistanciaEntrePontos(latitudeAluno, longitudeAluno, latitudeProf, longitudeProf) {
+    const distancia = calcularDistancia(latitudeAluno, longitudeAluno, latitudeProf, longitudeProf);
+
+    if (distancia <= 20) {
+      console.log('As coordenadas estão dentro do limite de 20 metros.');
+      pode_iniciar = 1;
       
-    // if (database.hasOwnProperty(id)) {
-
-    //   console.log(`Aluno registrado: ${id} - Nome: ${database[id].name} - Curso: ${database[id].course} - Turma: ${database[id].class}`);
-    //   alunos_presentes.push(id);
-
-
-
-    //   res.json({ status: 'OK' });
-    // } else {
-    //   console.log("id nao encontrado")
-    //   res.status(400).json({ error: 'ID não encontrado' });
-    // }
+    } else {
+      console.log('As coordenadas estão fora do limite de 20 metros.');
+      pode_iniciar = 0;
+      
+    }
+  }
+  calcularDistanciaEntrePontos(latitudeAluno, longitudeAluno, latitudeProf, longitudeProf);
 
 
+  ////////////////////////////
+
+  
+//ai dps de verificar se o aluno está proximo ao professor, vai verifiar se o ssid é o mesmo tb
+//se for, ele vai verificar se o id do aluno existe no banco de dados, ai dps de toda essa bagaça 
+//a presença pode ser registrada
+    console.log('Chamada aberta:', chamadaAberta);
+    console.log('ID inserido:', id);
+    if (chamadaAberta && ssidAluno === ssidProf) {
+
+      verificarAluno(id)
+        .then(existe => {
+          if (existe) {
+            console.log(`O aluno com ID ${id} registrou presença.`);
+            res.send("Sua presença foi registrada!")
+            alunos_presentes.push(id)
+          } else {
+            console.log(`O aluno com ID ${id} não foi encontrado no banco de dados.`);
+            res.send("Id insediro incorreto!")
+          }
+        })
+        .catch(err => {
+          console.error('Erro ao verificar aluno:', err);
+        });
 
 
-  // }
 
-// });
+    } else if (ssidAluno !== ssidProf) {
+      console.log("Voce precisa estar na mesma rede para registrar presença!")
+      res.status(400).json({ error: "Voce precisa estar na mesma rede para registrar presença!" })
+    }
+
+    else {
+      console.log("chamada fechada")
+      res.status(400).json({ error: 'Chamada fechada' });
+    }
+
+ 
+});
 
 
 io.on('connection', (socket) => {
   console.log('Um usuário conectado');
   socket.emit('chamada', chamadaAberta);
 });
+
 
 const server = http.listen(3000, function () {
   console.log('Servidor iniciado, aguardando início da chamada');
