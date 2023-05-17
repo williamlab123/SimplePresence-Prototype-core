@@ -14,6 +14,51 @@
   </form>
   <div id="status"></div>
   <script>
+
+ function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            document.getElementById('latitude').textContent = 'Latitude: ' + latitude;
+            document.getElementById('longitude').textContent = 'Longitude: ' + longitude;
+          },
+          function (error) {
+            console.error('Ocorreu um erro ao obter a localização:', error);
+          }
+        );
+      } else {
+        console.error('Seu navegador não suporta a API de geolocalização.');
+      }
+    }
+
+    getLocation();
+
+
+ //enviar geolocalizaçao pro servidor
+
+ const xhr = new XMLHttpRequest();
+
+
+xhr.open('POST', 'http://localhost:3000/registrar_presenca');
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+xhr.onload = function () {
+  if (xhr.status === 200) {
+    console.log('Latitude e longitude enviadas com sucesso');
+  } else if (xhr.status === 400) {
+    console.error(xhr.responseText);
+  }
+};
+xhr.onerror = function () {
+  console.error('Erro na requisição.');
+};
+xhr.send(`latitude=${latitude}&longitude=${longitude}`);
+
+
+ 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
     const registrarBtn = document.getElementById('registrar-btn');
 
     const idInput = document.getElementById('id-input');
@@ -27,7 +72,7 @@
     const statusMsg = document.getElementById('status');
 
     const checkStatus = () => {
-      fetch('https://simplepresence-production.up.railway.app/verificar_chamada')
+      fetch('http://localhost:3000/verificar_chamada')
         .then(response => response.json())
         .then(data => {
           if (data) {
@@ -53,7 +98,7 @@
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', 'https://simplepresence-production.up.railway.app/registrar_presenca');
+      xhr.open('POST', 'http://localhost:3000/registrar_presenca');
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onload = function () {
         if (xhr.status === 200) {
