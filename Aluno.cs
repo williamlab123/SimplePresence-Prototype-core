@@ -6,7 +6,7 @@ using System.Text;
 namespace ConsoleApp
   {
     class Program
-    
+   
     {
 
         //         TELA DO ALUNO ---  REGISTRAR PRESENÇA ---- 
