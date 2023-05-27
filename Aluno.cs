@@ -8,6 +8,7 @@ namespace ConsoleApp
     class Program
    
     {
+      
 
         //         TELA DO ALUNO ---  REGISTRAR PRESENÇA ---- 
         static void Main(string[] args)
